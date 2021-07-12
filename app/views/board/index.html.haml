@@ -2,21 +2,64 @@
   aws_wss = "ws://162.243.120.86:3010"
   window.socket = undefined;
   
-  window.make_circle = (remote_id)->
+  window.create_circle = (remote_id, color_id)->
     return new paper.Path.Circle
-      radius: 50
-      fillColor: "red"
-      position: paper.view.center
+      fillColor: color_id
       remote_id: remote_id
+      radius: 100
+      position: paper.view.center
+      
   $ ->
+    start_socket = ->
+      socket = new WebSocket(aws_wss, ["http"])
+      socket.onopen = (event) ->
+        $("#connect").addClass("disabled")
+        $("#connect").addClass("green")
+        $("#connect").removeClass("red")
+        
+      socket.onclose = (event) ->
+        $("#connect").removeClass("disabled")
+        $("#connect").removeClass("green")
+        $("#connect").addClass("red")
+        
+      socket.onerror = (event) ->
+        alertify.notify "Error"
+        
+      socket.onmessage = (event) ->
+        eventData = JSON.parse(event.data)
+        $("#sandbox").trigger('move',[eventData])
+        
+      return socket
+      
+    # YOUR CODE HERE
+    $('#sandbox').on('move', (event,data) ->
+      circle = paper.project.getItems({remote_id : data.remote_id})
+      circle_c = circle[0]
+      if data.remote_id == undefined
+        return
+      if circle.length == 0
+        create_circle(data.remote_id, data.color_id)
+      else
+        circle_c.fillColor = data.color_id
+        
+        if data.direction == "right"
+          return circle_c.position.x += 10
+          
+        if data.direction == "left"
+          return circle_c.position.x -= 10
+          
+        if data.direction == "up"
+          return circle_c.position.y -= 10
+          
+        if data.direction == "down"
+          return circle_c.position.y += 10
+        
+      )
     window.gui = new dat.GUI()
     window.app = new PaperJSApp
       canvas: $('canvas')
-      name: "MassControl"
-    alertify.set('notifier','position', 'bottom-left')
+    window.socket = start_socket()
     
-    # YOUR CODE HERE
-
     
 / DO NOT MODIFY CODE UNDER THIS LINE      
 :scss

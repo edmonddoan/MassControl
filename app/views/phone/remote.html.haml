@@ -3,11 +3,110 @@
   window.socket = undefined;
   
   $ ->
-    alertify.notify "Hello World"
-    $("form").submit (event)->
-      event.preventDefault()
-    # YOUR CODE HERE
-    
+    start_socket = ->
+      connect_sock = new WebSocket(aws_wss, ["http"])
+      
+      connect_sock.onopen = (event) ->
+        $("#connect").addClass("disabled")
+        $("#connect").addClass("green")
+        $("#connect").removeClass
+        
+      connect_sock.onclose = (event) ->
+        $("#connect").removeClass("disabled")
+        $("#connect").removeClass("green")
+        $("#connect").addClass("red")
+        
+      connect_sock.onerror = (event) ->
+        alertify.notify "Error"
+        
+      connect_sock.onmessage = (event) ->
+        eventData = JSON.parse(event.data)
+        console.log("Server >>", JSON.parse(event.data))
+        
+      return connect_sock
+
+    $("#connect").click (event) ->
+      window.socket = true
+      alertify.notify "Connecting to socket"
+      this.disabled = true
+      $("#connect").addClass("green")
+      
+      window.socket = start_socket()
+      console.log(window.socket)
+      
+    $("[name=up]").click ->
+      up = {action: "move", remote_id: $("[name=remote_id]").val(), color_id: $("[name=color_id]").val(), direction: "up"}
+      if window.socket == undefined
+        alertify.error "Socket does not exist. Connect first"
+        return
+      
+      if up.remote_id == ""
+        alertify.notify "Please specify a remote ID"
+        return
+        
+      if window.socket.readyState == WebSocket.OPEN
+        prefix = "Server <<"
+        stringy = JSON.stringify(up)
+        request = stringy
+        window.socket.send(request)
+        console.log("Server << \n" +request)
+      
+    $("[name=down]").click ->
+      down = {action: "move", remote_id: $("[name=remote_id]").val(), color_id: $("[name=color_id]").val(), direction: "down"}
+      if window.socket == undefined
+        alertify.error "Socket does not exist. Connect first"
+        return
+      
+      if down.remote_id == ""
+        alertify.notify "Please specify a remote ID"
+        return
+        
+      if window.socket.readyState == WebSocket.OPEN
+        prefix = "Server
+        stringy = JSON.stringify(down)
+        request = stringy
+        window.socket.send(request)
+        console.log("Server << \n" +request)
+      
+    $("[name=right]").click ->
+      right = {action: "move", remote_id: $("[name=remote_id]").val(), color_id: $("[name=color_id]").val(), direction: "right"}
+      if window.socket == undefined
+        alertify.error "Socket does not exist. Connect first"
+        return
+      
+      if right.remote_id == ""
+        alertify.notify "Please specify a remote ID"
+        return
+        
+      if window.socket.readyState == WebSocket.OPEN
+        prefix = "Server <<"
+        stringy = JSON.stringify(right)
+        request = stringy
+        window.socket.send(stringy)
+        console.log("Server << \n" +request)
+      
+      
+    $("[name=left]").click
+      left = {action: "move", remote_id: $("[name=remote_id]").val(), color_id: $("[name=color_id]").val(), direction: "left"}
+      if window.socket == undefined
+        alertify.error "Socket does not exist. Connect first"
+        return
+      
+      
+      if left.remote_id == ""
+        alertify.notify "Please specify a remote ID"
+        return
+        
+      if window.socket.readyState == WebSocket.OPEN
+        prefix = "Server <<"
+        stringy = JSON.stringify(left)
+        request = stringy
+        window.socket.send(request)
+        console.log("Server << \n" +request)
+      
+   
+
+
 / DO NOT MODIFY CODE BELOW THIS LINE
 .mobile
   .hero
